@@ -21,10 +21,10 @@ const createWebServer = (requestHandler) => {
 					break;
 				}
 			}
-			const reqheaders = reqHeader.split("\r\n");
-			const reqLine = headers.shift().split(" ");
+			const reqHeaders = reqHeader.split("\r\n");
+			const reqLine = reqHeaders.shift().split(" ");
 
-			const headers = reqheaders.reduce((acc, stringy) => {
+			const headers = reqHeaders.reduce((acc, stringy) => {
 				const [key, value] = stringy.split(":");
 				return {
 					...acc,
@@ -40,16 +40,16 @@ const createWebServer = (requestHandler) => {
 			};
 			const status = 200;
 			const statusText = "OK";
-			const headersSent = false;
-			const isChunked = false;
+			let headersSent = false;
+			let isChunked = false;
 			const resHeaders = { server: "MySeRvEr" };
-			function writeHeader(key, value) {
+			function setHeader(key, value) {
 				resHeaders[key.toLowerCase()] = value;
 			}
 			const sendHeader = () => {
 				if (!headersSent) {
 					headersSent = true;
-					writeHeader("date", new Date().toUTCString());
+					setHeader("date", new Date().toUTCString());
 					socket.write(`HTTP/1.1 ${status} ${statusText}\r\n`);
 					Object.keys(resHeaders).forEach((key) => {
 						socket.write(`${key}, ${resHeaders[key]}\r\n`);
@@ -112,12 +112,13 @@ const createWebServer = (requestHandler) => {
 			};
 			requestHandler(req, response);
 		});
-		return {
-			listen: (port) => {
-				server.listen(port);
-			},
-		};
+		
 	});
+	return {
+		listen: (port) => {
+			server.listen(port);
+		},
+	};
 };
 const webserver = createWebServer((req, response) => {
 	console.log(`${new Date().toUTCString()}`);
@@ -127,4 +128,5 @@ const webserver = createWebServer((req, response) => {
 	response.end("Hello World");
 });
 
+console.log(webserver)
 webserver.listen(5000);
